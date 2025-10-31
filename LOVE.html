@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亲爱的瑞宝</title>
+    <style>
+        /* 全局样式设置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f5f5f7; /* iOS原生背景色 */
+            font-family: "-apple-system", "BlinkMacSystemFont", "PingFang SC", "Helvetica Neue", sans-serif;
+            text-align: center;
+            padding: 50px 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* 主标题样式 */
+        h1 {
+            color: #1d1d1f; /* iOS标题文字色 */
+            font-size: 28px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* 按钮容器 */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* 按钮样式 - iOS原生风格 */
+        button {
+            background-color: #007aff; /* iOS系统蓝 */
+            color: white;
+            border: none;
+            border-radius: 10px; /* iOS 15+ 按钮圆角 */
+            font-size: 17px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            transform: scale(1.02);
+            opacity: 0.92;
+            background-color: #0066cc;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:disabled {
+            background-color: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 1;
+            box-shadow: none;
+        }
+        
+        /* 弹窗样式 - iOS便签风格 */
+        .blessing-popup {
+            position: fixed;
+            width: 220px;
+            height: 100px;
+            border-radius: 12px; /* iOS便签圆角 */
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); /* 轻薄阴影 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            animation: bubbleIn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            font-size: 16px;
+            z-index: 1000;
+            text-align: center;
+            overflow: hidden;
+            background-color: white; /* 基础白色背景 */
+            border: 1px solid rgba(0, 0, 0, 0.05); /* 细边框增强质感 */
+            cursor: grab;
+            user-select: none; /* 禁止文本选中 */
+        }
+        
+        /* 爱心弹窗特殊样式 */
+        .blessing-popup.heart {
+            background-color: #fee2e2; /* 粉色系更适合爱心 */
+            z-index: 1001; /* 爱心弹窗置于普通弹窗之上 */
+        }
+        
+        /* 弹窗弹出动画 - 泡泡渐显效果 */
+        @keyframes bubbleIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        /* 拖动时样式 */
+        .blessing-popup.dragging {
+            cursor: grabbing;
+            z-index: 2000; /* 拖动时置于顶层 */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 关闭按钮样式 - iOS原生风格 */
+        .close-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: #6e6e73; /* iOS次要文字色 */
+            font-size: 13px;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            box-shadow: none;
+            cursor: pointer;
+        }
+        
+        .close-btn:hover {
+            color: #1d1d1f;
+            background: white;
+            transform: none;
+            opacity: 1;
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+        
+        .close-btn:active {
+            background: #f5f5f7;
+        }
+        
+        /* 便签色彩变体 - 保持简约协调 */
+        .blessing-popup.blue { background-color: #eef7ff; }
+        .blessing-popup.green { background-color: #f0fdf4; }
+        .blessing-popup.yellow { background-color: #fffbeb; }
+        .blessing-popup.purple { background-color: #faf5ff; }
+        .blessing-popup.pink { background-color: #fee2e2; }
+        .blessing-popup.gray { background-color: #f8fafc; }
+    </style>
+</head>
+<body>
+    <h1>来自小灰灰的祝福！❤️</h1>
+    <div class="button-container">
+        <button id="startBtn">点击查收</button>
+    </div>
+
+    <script>
+        // 获取按钮元素
+        const startBtn = document.getElementById('startBtn');
+                
+        // 定义弹窗样式类（iOS便签风格配色）
+        const popupStyles = [
+            'blue', 'green', 'yellow', 'purple', 'pink', 'gray',
+            'blue', 'green', 'yellow', 'purple'
+        ];
+        
+        const normalBlessings = [
+            '今天的你也超帅的！😎',
+            '工作再忙也要记得休息呀😌',
+            '和你在一起的每一天都好甜🍬',
+            '你笑起来的时候世界都亮了☀️',
+            '谢谢你包容我的小脾气🙏',
+            '想每天都窝在你怀里看电影🎬',
+            '你的肩膀是最温暖的港湾⛱️',
+            '要一直做我的超级英雄呀🦸',
+            '下次见面一定要紧紧抱住你🤗',
+            '你的存在本身就是我的幸运🍀',
+            '再忙也要按时吃饭哦🍚',
+            '梦见你的时候都会笑出声😴',
+            '和你牵手散步的时光最美好👫',
+            '你认真的样子真的很迷人✨',
+            '有你在身边就很安心❤️',
+            '期待我们的下一次旅行✈️',
+            '你做的饭是世界上最好吃的🍳',
+            '就算吵架也不会真的生气呀😜',
+            '谢谢你出现在我的生命里🌟',
+            '想和你一起慢慢变老👵👴',
+            '你的怀抱是最治愈的地方💊',
+            '每天都比昨天更爱你一点💖',
+            '看到你就什么烦恼都没了😉',
+            '你就是我的全世界呀🌍',
+            '和你分享的日常都很珍贵📝'
+        ];
+        
+        // 爱心弹窗专用祝福（丰富内容+更多表情）
+        const heartBlessings = [
+            '我的心里全是你❤️',
+            '永远爱你哟~💕',
+            '你是我的唯一💍',
+            '一辈子都要在一起👩❤️👨',
+            '爱你无期限💖',
+            '你填满了我的心💓',
+            '心永远为你跳动💗',
+            '专属你的爱💞',
+            '爱是我们的永恒🔒',
+            '你就是我的心之所向🧭',
+            '往后余生都是你👫',
+            '心跳为你而加速💓',
+            '爱意藏在细节里🔍',
+            '你是心动的理由💘',
+            '余生请多指教呀🙏',
+            '爱是长情的告白💌',
+            '心与心紧紧相依🫂',
+            '有你就是全世界🌎',
+            '爱你不止三千遍🔢',
+            '心随你动，情为你牵💘'
+        ];
+        
+        // 特殊祝福内容
+        const specialBlessing = '这辈子最幸运的事，就是遇见你❤️✨';
+        
+        // 生成指定范围内的随机整数
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // 生成爱心形状的坐标点（缩小爱心尺寸）
+        function generateHeartPoints(count, scale = 20, offsetX = 0, offsetY = 0) {
+            const points = [];
+            const centerX = window.innerWidth / 2 + offsetX;
+            const centerY = window.innerHeight / 2 + offsetY;
+            
+            // 调整心形密度和缩放比例，使爱心更小更精致
+            for (let i = 0; i < count; i++) {
+                const t = (i / count) * Math.PI * 2;
+                // 心形曲线参数方程
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                
+                // 缩小爱心比例（scale从35调整为20）
+                const pointX = centerX + x * scale;
+                const pointY = centerY - y * scale; // 负号是因为屏幕Y轴向下
+                
+                points.push({ x: pointX, y: pointY });
+            }
+            
+            return points;
+        }
+        
+        // 创建单个祝福弹窗
+        function createBlessingPopup(isHeart = false, position = null) {
+            // 创建弹窗元素
+            const popup = document.createElement('div');
+            popup.className = 'blessing-popup';
+            
+            // 如果是爱心弹窗，添加特殊类
+            if (isHeart) {
+                popup.classList.add('heart');
+            } else {
+                // 随机选择便签样式
+                const randomStyle = popupStyles[getRandomInt(0, popupStyles.length - 1)];
+                popup.classList.add(randomStyle);
+            }
+            
+            // 选择祝福内容
+            let blessingContent;
+            if (Math.random() < 0.1) {
+                blessingContent = specialBlessing;
+            } else if (isHeart) {
+                // 爱心弹窗使用专用祝福
+                blessingContent = heartBlessings[getRandomInt(0, heartBlessings.length - 1)];
+            } else {
+                blessingContent = normalBlessings[getRandomInt(0, normalBlessings.length - 1)];
+            }
+            
+            // 设置弹窗内容和关闭按钮
+            popup.innerHTML = `
+                <span>${blessingContent}</span>
+                <button class="close-btn">×</button>
+            `;
+            
+            // 设置位置
+            let leftPos, topPos;
+            if (position) {
+                // 使用指定位置（爱心形状）
+                leftPos = position.x - 110; // 减去宽度的一半以居中
+                topPos = position.y - 50;  // 减去高度的一半以居中
+            } else {
+                // 随机位置
+                const maxLeft = window.innerWidth - 220;
+                const maxTop = window.innerHeight - 100;
+                leftPos = getRandomInt(0, maxLeft);
+                topPos = getRandomInt(0, maxTop);
+            }
+            
+            popup.style.left = `${leftPos}px`;
+            popup.style.top = `${topPos}px`;
+            
+            // 添加到页面
+            document.body.appendChild(popup);
+            
+            // 为关闭按钮添加事件
+            const closeBtn = popup.querySelector('.close-btn');
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // 阻止事件冒泡
+                popup.remove();
+            });
+            
+            // 添加拖动功能
+            makeDraggable(popup);
+        }
+        
+        // 使元素可拖动
+        function makeDraggable(element) {
+            let isDragging = false;
+            let offsetX, offsetY;
+            let originalZIndex = element.style.zIndex;
+            
+            // 鼠标按下时开始拖动
+            element.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('close-btn')) return;
+                
+                isDragging = true;
+                element.classList.add('dragging');
+                originalZIndex = element.style.zIndex;
+                element.style.zIndex = 2000;
+                
+                const rect = element.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                
+                document.body.style.userSelect = 'none';
+            });
+            
+            // 鼠标移动时拖动元素
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const maxLeft = window.innerWidth - element.offsetWidth;
+                const maxTop = window.innerHeight - element.offsetHeight;
+                
+                let newLeft = e.clientX - offsetX;
+                let newTop = e.clientY - offsetY;
+                
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
+                
+                element.style.left = `${newLeft}px`;
+                element.style.top = `${newTop}px`;
+            });
+            
+            // 鼠标释放时结束拖动
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    element.classList.remove('dragging');
+                    element.style.zIndex = originalZIndex;
+                    document.body.style.userSelect = '';
+                }
+            });
+            
+            document.addEventListener('mouseleave', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    element.classList.remove('dragging');
+                    element.style.zIndex = originalZIndex;
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+        
+        // 开启祝福按钮点击事件
+        startBtn.addEventListener('click', () => {
+            startBtn.disabled = true;
+            
+            // 总数70个弹窗：前面50个随机分布，最后20个组成爱心
+            const totalRandom = 80;
+            const totalHeart = 25;
+            const interval = 100; // 弹窗间隔时间
+            
+            // 生成爱心坐标点（缩小版爱心，scale=20）
+            const heartPoints = generateHeartPoints(totalHeart, 20, 0, -20);
+            
+            // 创建随机分布的弹窗
+            for (let i = 0; i < totalRandom; i++) {
+                setTimeout(() => createBlessingPopup(false), i * interval);
+            }
+            
+            // 创建爱心形状的弹窗（在随机弹窗之后）
+            for (let i = 0; i < totalHeart; i++) {
+                const delay = totalRandom * interval + i * interval;
+                setTimeout(() => {
+                    createBlessingPopup(true, heartPoints[i]);
+                }, delay);
+            }
+            
+            // 恢复按钮可用（总时长 + 额外1秒）
+            const totalTime = (totalRandom + totalHeart) * interval + 1000;
+            setTimeout(() => {
+                startBtn.disabled = false;
+            }, totalTime);
+        });
+    </script>
+</body>
+</html>
