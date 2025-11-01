@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        love: {
+                            100: '#FFB6C1',
+                            200: '#FF69B4',
+                            300: '#FF1493',
+                            400: '#DB7093',
+                            500: '#C71585',
+                        }
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .heart-beat {
+                animation: heartbeat 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+            }
+            .float-up {
+                animation: floatUp 6s linear forwards;
+            }
+            .float-down {
+                animation: floatDown 6s linear forwards;
+            }
+            .float-left {
+                animation: floatLeft 7s linear forwards;
+            }
+            .float-right {
+                animation: floatRight 7s linear forwards;
+            }
+            .pulse-glow {
+                animation: pulseGlow 2s infinite alternate;
+            }
+            @keyframes heartbeat {
+                0% { transform: scale(1); }
+                14% { transform: scale(1.1); }
+                28% { transform: scale(1); }
+                42% { transform: scale(1.1); }
+                70% { transform: scale(1); }
+            }
+            @keyframes floatUp {
+                0% {
+                    transform: translateY(120vh) rotate(0deg);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 1;
+                }
+                90% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(-100px) rotate(30deg);
+                    opacity: 0;
+                }
+            }
+            @keyframes floatDown {
+                0% {
+                    transform: translateY(-100px) rotate(0deg);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 1;
+                }
+                90% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(120vh) rotate(-30deg);
+                    opacity: 0;
+                }
+            }
+            @keyframes floatLeft {
+                0% {
+                    transform: translateX(120vw) rotate(0deg);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 1;
+                }
+                90% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateX(-100px) rotate(-30deg);
+                    opacity: 0;
+                }
+            }
+            @keyframes floatRight {
+                0% {
+                    transform: translateX(-100px) rotate(0deg);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 1;
+                }
+                90% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateX(120vw) rotate(30deg);
+                    opacity: 0;
+                }
+            }
+            @keyframes pulseGlow {
+                from {
+                    text-shadow: 0 0 10px rgba(255, 20, 147, 0.5), 
+                                 0 0 20px rgba(255, 20, 147, 0.3);
+                }
+                to {
+                    text-shadow: 0 0 20px rgba(255, 20, 147, 0.8), 
+                                 0 0 40px rgba(255, 20, 147, 0.6),
+                                 0 0 60px rgba(255, 20, 147, 0.4);
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-black to-gray-900 min-h-screen overflow-hidden">
+    <!-- 背景星光效果 -->
+    <div id="stars" class="fixed inset-0 pointer-events-none"></div>
+    
+    <div class="relative w-full h-screen flex items-center justify-center">
+        <!-- 中心大爱心 -->
+        <div class="heart-beat pulse-glow text-love-300 text-[150px] md:text-[250px] lg:text-[300px]">
+            <i class="fa fa-heart"></i>
+        </div>
+        
+        <!-- 满屏浮动元素容器 -->
+        <div id="floating-elements" class="absolute inset-0 w-full h-full pointer-events-none"></div>
+        
+        <!-- 交互提示 -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/70 text-sm md:text-base transition-opacity duration-500 hover:opacity-100">
+        </div>
+    </div>
+
+    <script>
+        // 增加最大元素数量，实现满屏效果
+        const MAX_FLOATING_ELEMENTS = window.innerWidth < 768 ? 80 : 120;
+        let currentElementCount = 0;
+        
+        // 创建背景星光
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = window.innerWidth < 768 ? 80 : 150;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                const size = Math.random() * 3 + 1;
+                star.className = 'absolute rounded-full bg-white opacity-50';
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animation = `pulseGlow ${Math.random() * 3 + 2}s infinite alternate`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // 创建浮动元素（爱心和字符）
+        function createFloatingElement() {
+            if (currentElementCount >= MAX_FLOATING_ELEMENTS) return;
+            
+            const container = document.getElementById('floating-elements');
+            const isHeart = Math.random() > 0.5; // 70%爱心，30%字符
+            
+            // 随机选择动画方向（上下左右）
+            const animations = ['float-up', 'float-down', 'float-left', 'float-right'];
+            const animationType = animations[Math.floor(Math.random() * animations.length)];
+            
+            let element;
+            if (isHeart) {
+                // 创建爱心元素
+                element = document.createElement('i');
+                element.className = `fa fa-heart ${animationType} absolute`;
+                element.style.color = getRandomColor();
+                element.style.fontSize = `${Math.random() * 25 + 10}px`;
+            } else {
+                // 创建字符元素
+                element = document.createElement('div');
+                const texts = ["I Love You", "❤️", "爱瑞宝","爱你", "Forever", "💕", "Love", "💖", "💘"];
+                element.textContent = texts[Math.floor(Math.random() * texts.length)];
+                element.className = `${animationType} absolute font-bold`;
+                element.style.color = getRandomColor();
+                element.style.fontSize = `${Math.random() * 20 + 12}px`;
+                element.style.textShadow = "0 0 5px rgba(255,255,255,0.8)";
+            }
+            
+            // 根据动画方向设置初始位置
+            switch(animationType) {
+                case 'float-up':
+                    element.style.left = `${Math.random() * 100}%`;
+                    element.style.bottom = "-50px";
+                    break;
+                case 'float-down':
+                    element.style.left = `${Math.random() * 100}%`;
+                    element.style.top = "-50px";
+                    break;
+                case 'float-left':
+                    element.style.top = `${Math.random() * 100}%`;
+                    element.style.right = "-50px";
+                    break;
+                case 'float-right':
+                    element.style.top = `${Math.random() * 100}%`;
+                    element.style.left = "-50px";
+                    break;
+            }
+            
+            // 随机动画延迟和持续时间
+            const delay = Math.random() * 3;
+            const duration = Math.random() * 4 + 5;
+            element.style.animationDelay = `${delay}s`;
+            element.style.animationDuration = `${duration}s`;
+            
+            // 随机旋转角度
+            element.style.transform = `rotate(${Math.random() * 60 - 30}deg)`;
+            
+            container.appendChild(element);
+            currentElementCount++;
+            
+            // 动画结束后移除元素
+            setTimeout(() => {
+                element.remove();
+                currentElementCount--;
+            }, (delay + duration) * 1000);
+        }
+        
+        // 获取随机颜色
+        function getRandomColor() {
+            const colors = [
+                '#FFB6C1', '#FF69B4', '#FF1493', 
+                '#DB7093', '#C71585', '#FFC0CB',
+                '#FFA07A', '#FF6347', '#FFFFFF',
+                '#FFD700', '#FF4500', '#FF69B4'
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        // 定时创建元素，调整频率实现满屏效果
+        function startCreatingElements() {
+            let interval = window.innerWidth < 768 ? 150 : 100;
+            const intervalId = setInterval(() => {
+                createFloatingElement();
+                // 根据当前元素数量动态调整创建频率
+                if (currentElementCount > MAX_FLOATING_ELEMENTS * 0.7 && interval < 500) {
+                    interval += 20;
+                    clearInterval(intervalId);
+                    startCreatingElements();
+                }
+            }, interval);
+        }
+        
+        // 点击屏幕添加爱心爆发
+        document.addEventListener('click', (e) => {
+            const burstCount = 15; // 增加爆发数量
+            for (let i = 0; i < burstCount; i++) {
+                const element = document.createElement('i');
+                element.className = 'fa fa-heart absolute';
+                element.style.color = getRandomColor();
+                element.style.fontSize = `${Math.random() * 20 + 10}px`;
+                element.style.left = `${e.clientX}px`;
+                element.style.top = `${e.clientY}px`;
+                element.style.position = 'fixed';
+                element.style.pointerEvents = 'none';
+                
+                // 爆炸动画
+                const angle = (i / burstCount) * Math.PI * 2;
+                const distance = Math.random() * 100 + 50;
+                element.animate([
+                    { transform: 'translate(0, 0)', opacity: 1 },
+                    { transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 500,
+                    easing: 'cubic-bezier(0.17, 0.67, 0.83, 0.67)'
+                });
+                
+                document.body.appendChild(element);
+                
+                // 动画结束后移除
+                setTimeout(() => element.remove(), 1500);
+            }
+        });
+        
+        // 初始化
+        window.addEventListener('load', () => {
+            createStars();
+            startCreatingElements();
+            
+            // 初始创建更多元素，快速填满屏幕
+            const initialCount = window.innerWidth < 768 ? 30 : 50;
+            for (let i = 0; i < initialCount; i++) {
+                setTimeout(createFloatingElement, i * 100);
+            }
+        });
+        
+        // 窗口大小变化时重新调整
+        window.addEventListener('resize', () => {
+            const starsContainer = document.getElementById('stars');
+            starsContainer.innerHTML = '';
+            createStars();
+        });
+    </script>
+</body>
+</html>
